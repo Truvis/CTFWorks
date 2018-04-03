@@ -68,7 +68,7 @@
 <?php
 
 function OnOffService($SET, $SERVICE){
-    $db = new mysqli('localhost', 'root', '123!@#qaZ', 'test');
+    $db = new mysqli('localhost', 'USER', 'PASS', 'DB');
     if($db->connect_errno > 0){
         die('Unable to connect to database [' . $db->connect_error . ']');
     }
@@ -100,7 +100,7 @@ else if(isset($_POST['update'])) {
 
 // function used to call the services and their statues
 function RunServiceStatusQuery($SERVICE){
-    $db = new mysqli('localhost', 'root', '123!@#qaZ', 'test');
+    $db = new mysqli('localhost', 'USER', 'PASS', 'DB');
     if($db->connect_errno > 0){
         die('Unable to connect to database [' . $db->connect_error . ']');
     }
