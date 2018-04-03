@@ -1,0 +1,105 @@
+<html>
+<head>
+    <style>
+        .STATUSON{
+            background: rgb(0, 255, 0);
+            border-radius: 50%;
+            display: inline-block;
+            height: 20px;
+            margin-left: 4px;
+            margin-right: 4px;
+            width: 20px;
+        }
+        .STATUSOFF{
+            background: rgb(255, 0, 0);
+            border-radius: 50%;
+            display: inline-block;
+            height: 20px;
+            margin-left: 4px;
+            margin-right: 4px;
+            width: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script type="text/javascript">
+    function loadNowPlaying(){
+        $.ajax({
+            url: "esi.php",
+            type: "POST",
+            data:  'update=k',
+            success: function(data) {
+                $('#output').html(data);
+            },
+        });
+    }
+    setInterval(function(){loadNowPlaying()}, 1000);
+
+</script>
+
+<?php
+
+if(isset($_POST['update'])) {
+    UpdateServiceStatus();
+}
+
+// function used to call the services and their statues
+
+/*
+
+Database structure
+
+MariaDB [test]> describe service_statuses;
++--------------+--------------+------+-----+---------+-------+
+| Field        | Type         | Null | Key | Default | Extra |
++--------------+--------------+------+-----+---------+-------+
+| service_name | varchar(255) | YES  |     | NULL    |       |
+| status       | int(11)      | YES  |     | NULL    |       |
++--------------+--------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+ */
+function RunServiceStatusQuery($SERVICE){
+    $db = new mysqli('localhost', 'root', '123!@#qaZ', 'test');
+    if($db->connect_errno > 0){
+        die('Unable to connect to database [' . $db->connect_error . ']');
+    }
+
+    $sql = "SELECT * FROM `service_statuses` WHERE service_name='".$SERVICE."'";
+
+    if(!$result = $db->query($sql)){
+        die('There was an error running the query [' . $db->error . ']');
+    }
+    while($row = $result->fetch_assoc()){
+        // are we on or off?
+        if($row['status']==1){
+            $STATUS = "<td class=''><span class=\"STATUSON\"></span></td>";
+        }
+        else {
+            $STATUS = "<td class=''><span class=\"STATUSOFF\"></span></td>";
+        }
+
+        echo "<tr><td>" . $row['service_name'] ."</td>". $STATUS ."</tr>";
+    }
+    $result->free();
+}
+
+function UpdateServiceStatus(){
+    /* [ SERVICE TABLE START ] */
+    echo"<table>";
+    RunServiceStatusQuery("SSH");
+    RunServiceStatusQuery("FTP");
+    RunServiceStatusQuery("HTTP");
+    RunServiceStatusQuery("TELNET");
+    RunServiceStatusQuery("SNMP");
+    echo"</table>";
+    /* [ SERVICE TABLE END ] */
+}
+
+echo'<br><div id="output"></div>';
+
+?>
+</body>
+</html>
